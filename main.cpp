@@ -6,12 +6,12 @@
 #include <map>
 #include <future>
 
-int kWindowsSizeX= 800;
-int kWindowSizeY = 800;
+int kWindowsSizeX = 800;
+int kWindowsSizeY = 800;
 
 int kResolution = 800;
-
-int kDepth = 255;
+int kNbThread = 16;
+int kDepth = 8;
 
 long double k_xmin = -2;
 long double k_xmax = 0.5;
@@ -29,32 +29,87 @@ int mandelbrot(std::complex<long double> value) {
 	return kDepth;
 }
 
+std::map<std::pair<int, int>, int> partial_brot(long double xmin, long double xmax, long double ymin, long double ymax, int window_x_min, int window_x_max, int window_y_min, int window_y_max) {
+	std::map<std::pair<int, int>, int> out;
+
+	for (int x = window_x_min; x < window_x_max; ++x) {
+		for (int y = window_y_min; y < window_y_max; ++y) {
+			std::complex<long double> coordinate(xmin + ((x*1.0 / (window_x_max - window_x_min)) * (xmax - xmin)), ymin + ((y*1.0 / (window_y_max - window_y_min)) * (ymax - ymin)));
+			int deviation = mandelbrot(coordinate);
+
+			out.insert(std::make_pair(std::make_pair(x, y), deviation));
+		}
+	}
+	return out;
+}
+
 
 sf::Image mandelbrot_set(long double xmin, long double xmax, long double ymin, long double ymax) {
 	sf::Image image;
-	image.create(kResolution, kResolution, sf::Color::Blue);
-	for (long double x = 0; x < kResolution; x+=1) {
-		for (long double y = 0; y < kResolution; y+=1) {
-			std::complex<long double> coordinate(xmin + ((x / kResolution) * (xmax - xmin)), ymin + ((y / kResolution) * (ymax - ymin)));
-			int deviation = mandelbrot(coordinate);
-			
+	image.create(kWindowsSizeX, kWindowsSizeY, sf::Color::Blue);
+	std::vector<std::future<std::map<std::pair<int, int>, int>>> parts;
+
+	long double delta_x = xmax - xmin;
+	long double delta_y = ymax - ymin;
+
+	for (int i = 0; i < kNbThread; ++i) {
+		long double a = 0;// xmin + (delta_x * i / kNbThread);
+		long double b = xmax; // a + (delta_x * 1 / kNbThread);
+		long double c = ymin + (delta_y * i*1.0 / kNbThread*1.0);
+		long double d = c + (delta_y * (i*1.0 + 1) / kNbThread*1.0);
+
+		int e = 0;//kWindowsSizeX - (((kNbThread - i*1.0) / kNbThread) * kWindowsSizeX);
+		int f = kWindowsSizeX;// -(((kNbThread - (i + 1.0)) / kNbThread) * kWindowsSizeX);
+		int g = kWindowsSizeY - (((kNbThread*1.0 - i*1.0) / kNbThread*1.0) * kWindowsSizeY*1.0);
+		int h = kWindowsSizeY - (((kNbThread*1.0 - (i + 1.0)) / kNbThread*1.0) * kWindowsSizeY*1.0);
+
+
+		parts.push_back(std::async(partial_brot, a, b, c, d, e, f, g, h));
+	}
+
+	for (auto &part : parts) {
+		auto new_stuff = part.get();
+		for (auto &point : new_stuff) {
+			int x = point.first.first;
+			int y = point.first.second;
+			int deviation = point.second;
 			int color = 0;
 			if (deviation < kDepth) {
 				color = 255 * (deviation*1.0 / kDepth*1.0);
 				image.setPixel(x, y, sf::Color(color, color, color));
 			}
+
+			//image.setPixel(, point.first.second, sf::Color(point.second));
 		}
 	}
 	return image;
+	/*
+
+	std::map<std::pair<long double, long double>, int> full_brot = parts.back().get();
+
+
+	for (long double x = 0; x < kResolution; x+=1) {
+	for (long double y = 0; y < kResolution; y+=1) {
+	std::complex<long double> coordinate(xmin + ((x / kResolution) * (xmax - xmin)), ymin + ((y / kResolution) * (ymax - ymin)));
+	int deviation = mandelbrot(coordinate);
+
+	int color = 0;
+	if (deviation < kDepth) {
+	color = 255 * (deviation*1.0 / kDepth*1.0);
+	image.setPixel(x, y, sf::Color(color, color, color));
+	}
+	}
+	}
+	return image;*/
 }
 
 int main() {
-	sf::RenderWindow window(sf::VideoMode(kWindowsSizeX, kWindowSizeY), "fractal_display", sf::Style::Close);
-	
+	sf::RenderWindow window(sf::VideoMode(kWindowsSizeX, kWindowsSizeY), "fractal_display", sf::Style::Close);
+
 	sf::Image image;
 	sf::Texture texture;
 	sf::Sprite sprite;
-	
+
 	bool display_changed = false;
 	image = mandelbrot_set(k_xmin, k_xmax, k_ymin, k_ymax);
 	image.saveToFile("C:\\Users\\Julien\\Pictures\\mandel.png");
@@ -117,14 +172,14 @@ int main() {
 		if (display_changed) {
 			image = mandelbrot_set(k_xmin, k_xmax, k_ymin, k_ymax);; //TODO: make these tunable
 		}
-		
+
 		window.clear();
 		texture.loadFromImage(image);
 		sprite.setTexture(texture, true);
 		window.draw(sprite);
 		window.display();
 		display_changed = false;
-		
+
 	}
 	return 0;
 }
