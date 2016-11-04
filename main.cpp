@@ -11,12 +11,29 @@ int kWindowsSizeY = 800;
 
 int kResolution = 800;
 int kNbThread = 16;
-int kDepth = 8;
+int kDepth = 125;
 
-long double k_xmin = -2;
+/*long double k_xmin = -2;
 long double k_xmax = 0.5;
 long double k_ymin = -1.25;
-long double k_ymax = 1.25;
+long double k_ymax = 1.25;*/
+
+long double center_point_x = -1.985540371654130485531439267191269851811165434636382820704394766801377;
+long double center_point_y = 0.000000000000000000000000000001565120217211466101983496092509512479178;
+
+long double k_initial_xmin = center_point_x - 2; //0.0013299 //1.3299
+long double k_initial_xmax = center_point_x + 2;
+long double k_initial_ymin = center_point_y - 2; //0.980002
+long double k_initial_ymax = center_point_y + 2;
+
+
+long double k_xmin = center_point_x - 2; //0.0013299 //1.3299
+long double k_xmax = center_point_x + 2;
+long double k_ymin = center_point_y - 2; //0.980002
+long double k_ymax = center_point_y + 2;
+
+float zoom_factor = 1;
+
 
 int mandelbrot(std::complex<long double> value) {
 	std::complex<long double> base = value;
@@ -34,7 +51,10 @@ std::map<std::pair<int, int>, int> partial_brot(long double xmin, long double xm
 
 	for (int x = window_x_min; x < window_x_max; ++x) {
 		for (int y = window_y_min; y < window_y_max; ++y) {
-			std::complex<long double> coordinate(xmin + ((x*1.0 / (window_x_max - window_x_min)) * (xmax - xmin)), ymin + ((y*1.0 / (window_y_max - window_y_min)) * (ymax - ymin)));
+			//xmin + ((x / kResolution) * (xmax - xmin)), ymin + ((y / kResolution) * (ymax - ymin)));
+			long double delta_x = (x * 1.0 / (window_x_max - window_x_min)) * (xmax - xmin);
+			long double delta_y = (y * 1.0 / (window_y_max - window_y_min)) * (ymax - ymin);
+			std::complex<long double> coordinate(xmin + delta_x, k_ymin + delta_y);
 			int deviation = mandelbrot(coordinate);
 
 			out.insert(std::make_pair(std::make_pair(x, y), deviation));
@@ -46,22 +66,22 @@ std::map<std::pair<int, int>, int> partial_brot(long double xmin, long double xm
 
 sf::Image mandelbrot_set(long double xmin, long double xmax, long double ymin, long double ymax) {
 	sf::Image image;
-	image.create(kWindowsSizeX, kWindowsSizeY, sf::Color::Blue);
+	image.create(kWindowsSizeX, kWindowsSizeY, sf::Color((int) xmax / xmin));
 	std::vector<std::future<std::map<std::pair<int, int>, int>>> parts;
 
 	long double delta_x = xmax - xmin;
 	long double delta_y = ymax - ymin;
 
 	for (int i = 0; i < kNbThread; ++i) {
-		long double a = 0;// xmin + (delta_x * i / kNbThread);
+		long double a = xmin;// xmin + (delta_x * i / kNbThread);
 		long double b = xmax; // a + (delta_x * 1 / kNbThread);
-		long double c = ymin + (delta_y * i*1.0 / kNbThread*1.0);
-		long double d = c + (delta_y * (i*1.0 + 1) / kNbThread*1.0);
+		long double c = ymin + (delta_y * i / kNbThread);
+		long double d = ymin + (delta_y * (i + 1.0) / kNbThread);
 
 		int e = 0;//kWindowsSizeX - (((kNbThread - i*1.0) / kNbThread) * kWindowsSizeX);
 		int f = kWindowsSizeX;// -(((kNbThread - (i + 1.0)) / kNbThread) * kWindowsSizeX);
-		int g = kWindowsSizeY - (((kNbThread*1.0 - i*1.0) / kNbThread*1.0) * kWindowsSizeY*1.0);
-		int h = kWindowsSizeY - (((kNbThread*1.0 - (i + 1.0)) / kNbThread*1.0) * kWindowsSizeY*1.0);
+		int g = kWindowsSizeY * i / kNbThread;// - (((kNbThread - i) / kNbThread*1.0) * kWindowsSizeY*1.0);
+		int h = (kWindowsSizeY * (i + 1.0) / kNbThread);//kWindowsSizeY - (((kNbThread - (i + 1)) / kNbThread) * kWindowsSizeY);
 
 
 		parts.push_back(std::async(partial_brot, a, b, c, d, e, f, g, h));
@@ -73,34 +93,14 @@ sf::Image mandelbrot_set(long double xmin, long double xmax, long double ymin, l
 			int x = point.first.first;
 			int y = point.first.second;
 			int deviation = point.second;
-			int color = 0;
+			int color = deviation  * kDepth % 256;//0;
 			if (deviation < kDepth) {
 				color = 255 * (deviation*1.0 / kDepth*1.0);
-				image.setPixel(x, y, sf::Color(color, color, color));
+				image.setPixel(x, y, sf::Color(1117111 * deviation)); //1117111 is a prime number, I thought I would give a cool effect #TODO: make tunable
 			}
-
-			//image.setPixel(, point.first.second, sf::Color(point.second));
 		}
 	}
 	return image;
-	/*
-
-	std::map<std::pair<long double, long double>, int> full_brot = parts.back().get();
-
-
-	for (long double x = 0; x < kResolution; x+=1) {
-	for (long double y = 0; y < kResolution; y+=1) {
-	std::complex<long double> coordinate(xmin + ((x / kResolution) * (xmax - xmin)), ymin + ((y / kResolution) * (ymax - ymin)));
-	int deviation = mandelbrot(coordinate);
-
-	int color = 0;
-	if (deviation < kDepth) {
-	color = 255 * (deviation*1.0 / kDepth*1.0);
-	image.setPixel(x, y, sf::Color(color, color, color));
-	}
-	}
-	}
-	return image;*/
 }
 
 int main() {
@@ -114,8 +114,10 @@ int main() {
 	image = mandelbrot_set(k_xmin, k_xmax, k_ymin, k_ymax);
 	image.saveToFile("C:\\Users\\Julien\\Pictures\\mandel.png");
 
-	while (window.isOpen())
+	int frame = 0;
+	while (window.isOpen() /*&& frame < 1200*/)
 	{
+		++frame;
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
@@ -136,19 +138,20 @@ int main() {
 				}
 				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
 					long double delta = (k_ymax - k_ymin) * 0.05;
-					k_ymin += delta;
-					k_ymax += delta;
+					k_ymin -= delta;
+					k_ymax -= delta;
 					display_changed = true;
 				}
 				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {
-					long double delta = (k_ymax - k_ymin) * 0.05;
-					k_ymin -= delta;
-					k_ymax -= delta;
+					long double delta = (k_ymax - k_ymin) * 0.25;
+					k_ymin += delta;
+					k_ymax += delta;
 					display_changed = true;
 				}
 				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Add)) {
 					long double delta_x = (k_xmax - k_xmin) * 0.05;
 					long double delta_y = (k_ymax - k_ymin) * 0.05;
+					//kDepth += (kDepth / 0.25 == 0 ? 5 : kDepth * 0.25);
 					k_xmin += delta_x;
 					k_xmax -= delta_x;
 					k_ymin += delta_y;
@@ -158,19 +161,40 @@ int main() {
 				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Subtract)) {
 					long double delta_x = (k_xmax - k_xmin) * 0.05;
 					long double delta_y = (k_ymax - k_ymin) * 0.05;
+					kDepth -= (kDepth / 0.25 == 0 ? 5 : kDepth * 0.05);
 					k_xmin -= delta_x;
 					k_xmax += delta_x;
 					k_ymin -= delta_y;
 					k_ymax += delta_y;
 					display_changed = true;
 				}
+				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Numpad1)) {
+					kDepth *= 2;
+					display_changed = true;
+				}
 
 
 			}
 		}
+		
+		/*VIDEO RECORD HACK */
+		/*zoom_factor *= 1.1;
+		std::string path = "C:\\Users\\Julien\\Pictures\\fractal_video\\mandel" + std::to_string(frame) + ".png";
+		image.saveToFile(path);
+		long double delta_x = std::abs((k_initial_xmax - k_initial_xmin) / zoom_factor);
+		long double delta_y = std::abs((k_initial_ymax - k_initial_ymin) / zoom_factor);
+		//kDepth += (kDepth / 0.01 == 0 ? 1 : kDepth * 0.01);
+		kDepth *= 1.05;
+		k_xmin = center_point_x - (2 / zoom_factor);
+		k_xmax = center_point_x + (2 / zoom_factor);
+		k_ymin = center_point_y - (2 / zoom_factor);
+		k_ymax = center_point_y + (2 / zoom_factor);
+		display_changed = true;
+		*/
+		/*END OF VIDEO HACK*/
 
 		if (display_changed) {
-			image = mandelbrot_set(k_xmin, k_xmax, k_ymin, k_ymax);; //TODO: make these tunable
+			image = mandelbrot_set(k_xmin, k_xmax, k_ymin, k_ymax);
 		}
 
 		window.clear();
