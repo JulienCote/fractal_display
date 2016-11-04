@@ -126,46 +126,30 @@ int main() {
 			if (event.type == sf::Event::KeyPressed) {
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
 					long double delta = (k_xmax - k_xmin) * 0.05;
-					k_xmin -= delta;
-					k_xmax -= delta;
+					center_point_x -= delta;
 					display_changed = true;
 				}
 				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
 					long double delta = (k_xmax - k_xmin) * 0.05;
-					k_xmin += delta;
-					k_xmax += delta;
+					center_point_x += delta;
 					display_changed = true;
 				}
 				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
 					long double delta = (k_ymax - k_ymin) * 0.05;
-					k_ymin -= delta;
-					k_ymax -= delta;
+					center_point_y -= delta;
 					display_changed = true;
 				}
 				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {
-					long double delta = (k_ymax - k_ymin) * 0.25;
-					k_ymin += delta;
-					k_ymax += delta;
+					long double delta = (k_ymax - k_ymin) * 0.05;
+					center_point_y += delta;
 					display_changed = true;
 				}
 				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Add)) {
-					long double delta_x = (k_xmax - k_xmin) * 0.05;
-					long double delta_y = (k_ymax - k_ymin) * 0.05;
-					//kDepth += (kDepth / 0.25 == 0 ? 5 : kDepth * 0.25);
-					k_xmin += delta_x;
-					k_xmax -= delta_x;
-					k_ymin += delta_y;
-					k_ymax -= delta_y;
+					zoom_factor *= 1.1;
 					display_changed = true;
 				}
 				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Subtract)) {
-					long double delta_x = (k_xmax - k_xmin) * 0.05;
-					long double delta_y = (k_ymax - k_ymin) * 0.05;
-					kDepth -= (kDepth / 0.25 == 0 ? 5 : kDepth * 0.05);
-					k_xmin -= delta_x;
-					k_xmax += delta_x;
-					k_ymin -= delta_y;
-					k_ymax += delta_y;
+					zoom_factor /= 1.1;
 					display_changed = true;
 				}
 				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Numpad1)) {
@@ -176,8 +160,6 @@ int main() {
 					kDepth /= 2;
 					display_changed = true;
 				}
-
-
 			}
 		}
 		
@@ -198,6 +180,10 @@ int main() {
 		/*END OF VIDEO HACK*/
 
 		if (display_changed) {
+			k_xmin = center_point_x - (2 / zoom_factor);
+			k_xmax = center_point_x + (2 / zoom_factor);
+			k_ymin = center_point_y - (2 / zoom_factor);
+			k_ymax = center_point_y + (2 / zoom_factor);
 			image = mandelbrot_set(k_xmin, k_xmax, k_ymin, k_ymax);
 		}
 
