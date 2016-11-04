@@ -10,7 +10,7 @@ int kWindowsSizeX = 800;
 int kWindowsSizeY = 800;
 
 int kResolution = 800;
-int kNbThread = 16;
+int kNbThread = 8;
 int kDepth = 125;
 
 /*long double k_xmin = -2;
@@ -96,7 +96,7 @@ sf::Image mandelbrot_set(long double xmin, long double xmax, long double ymin, l
 			int color = deviation  * kDepth % 256;//0;
 			if (deviation < kDepth) {
 				color = 255 * (deviation*1.0 / kDepth*1.0);
-				image.setPixel(x, y, sf::Color(1117111 * deviation)); //1117111 is a prime number, I thought I would give a cool effect #TODO: make tunable
+				image.setPixel(x, y, sf::Color((deviation * 7)%256, (deviation * 41) % 256, (deviation * 127) % 256));//(1117111 / (deviation+1))); //1117111 is a prime number, I thought I would give a cool effect #TODO: make tunable
 			}
 		}
 	}
@@ -170,6 +170,10 @@ int main() {
 				}
 				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Numpad1)) {
 					kDepth *= 2;
+					display_changed = true;
+				}
+				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Numpad4)) {
+					kDepth /= 2;
 					display_changed = true;
 				}
 
