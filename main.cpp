@@ -2,8 +2,9 @@
 #include <string>
 #include <SFML/Graphics.hpp>
 #include <complex>
+#include <chrono>
 #include <thread>
-#include <map>
+//#include <map>
 #include <future>
 
 int kWindowsSizeX = 800;
@@ -105,6 +106,7 @@ sf::Image mandelbrot_set(long double xmin, long double xmax, long double ymin, l
 
 int main() {
 	sf::RenderWindow window(sf::VideoMode(kWindowsSizeX, kWindowsSizeY), "fractal_display", sf::Style::Close);
+	window.setVerticalSyncEnabled(true);
 
 	sf::Image image;
 	sf::Texture texture;
@@ -194,6 +196,7 @@ int main() {
 		window.display();
 		display_changed = false;
 
+		std::this_thread::sleep_for(std::chrono::milliseconds(20));
 	}
 	return 0;
 }
