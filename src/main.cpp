@@ -12,7 +12,7 @@
 #include "mandelbrot.h"
 
 //typedef boost::multiprecision::cpp_dec_float_50 mp_number;
-typedef long double mp_number;
+//typedef long double mp_number;
 
 int kWindowsSizeX = 1920;
 int kWindowsSizeY = 1080;
@@ -30,7 +30,7 @@ mp_number k_ymax = 1.25;*/
 
 
 int main( int argc, char** argv ) {
-	Mandelbrot<long double> mandelbrot{};
+	Mandelbrot<mp_number> mandelbrot{};
 	sf::RenderWindow window(sf::VideoMode(kWindowsSizeX, kWindowsSizeY), "fractal_display", sf::Style::Close);
 	window.setVerticalSyncEnabled(true);
 
@@ -91,6 +91,19 @@ int main( int argc, char** argv ) {
 				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Numpad4)) {
 					mandelbrot.precision_decrease(2);
 					display_changed = true;
+				}
+			}
+			if(event.type == sf::Event::MouseButtonPressed) {
+				if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+					sf::Vector2i position = sf::Mouse::getPosition(window);
+					const float middle_x = kWindowsSizeX / 2.0;
+					const float middle_y = kWindowsSizeY / 2.0;
+
+					float factor_x = (position.x - middle_x) / middle_x;
+					float factor_y = (position.y - middle_y) / middle_y;
+
+					mandelbrot.move(factor_x, factor_y);
+					display_changed=true;
 				}
 			}
 		}

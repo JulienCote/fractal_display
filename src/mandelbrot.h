@@ -72,6 +72,20 @@ class Mandelbrot{
             mandelbrot_set(k_xmin, k_xmax, k_ymin, k_ymax, image);
         }
 
+        void move(float x_factor, float y_factor) {
+            if (x_factor > 0) {
+                move_right(x_factor/2);
+            } else {
+                move_left(-1*x_factor/2);
+            }
+
+            if (y_factor > 0) {
+                move_down(y_factor/2);
+            } else {
+                move_up(-1*y_factor/2);
+            }
+        }
+
         void move_left(float factor){
             T delta = (k_xmax - k_xmin) * factor;
 			center_point_x -= delta;
