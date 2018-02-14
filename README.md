@@ -5,8 +5,8 @@ Controls:
 * arrows     -> move around(translation)
 * numpad1    -> Doubles current precision, needed for bigger zooms
 * numpad4    -> Halves current precesion
-* +          -> zoom in
-* -          -> zoom out
+* \+          -> zoom in
+* \-          -> zoom out
 * left click -> recenter to mouse position
 
 Technologies currently used: 
