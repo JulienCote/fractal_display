@@ -12,7 +12,7 @@
 #include "mandelbrot.h"
 
 //typedef boost::multiprecision::cpp_dec_float_50 mp_number;
-//typedef long double mp_number;
+typedef long double mp_number;
 
 int kWindowsSizeX = 1920;
 int kWindowsSizeY = 1080;
@@ -30,7 +30,8 @@ mp_number k_ymax = 1.25;*/
 
 
 int main( int argc, char** argv ) {
-	Mandelbrot<mp_number> mandelbrot{};
+	Mandelbrot<mp_number> mandelbrot{true};
+	// Mandelbrot mandelbrot{};
 	sf::RenderWindow window(sf::VideoMode(kWindowsSizeX, kWindowsSizeY), "fractal_display", sf::Style::Close);
 	window.setVerticalSyncEnabled(true);
 
@@ -137,7 +138,7 @@ int main( int argc, char** argv ) {
 		window.display();
 		display_changed = false;
 
-		std::this_thread::sleep_for(std::chrono::milliseconds(20));
+		//std::this_thread::sleep_for(std::chrono::milliseconds(20));
 	}
 	return 0;
 }

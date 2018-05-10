@@ -1,20 +1,24 @@
 #pragma once
 
-#include <SFML/Graphics.hpp>
-#include "simple_complex.h"
-
 #include <iostream>
 #include <string>
 #include <SFML/Graphics.hpp>
+#include <SFML/Window.hpp>
 #include <chrono>
 #include <thread>
 #include <future>
 #include <mutex>
 
+
+#include "simple_complex.h"
+#include "mandelbrot_gpu.cuh"
+
 template<class T>
 class Mandelbrot{
     public:
-        Mandelbrot(){};
+        Mandelbrot(bool gpu_activated = false){
+            this->gpu_activated = gpu_activated;
+        };
 
         int mandelbrot(SimpleComplex& value) {
             SimpleComplex base = value;
@@ -25,7 +29,7 @@ class Mandelbrot{
                 value *= value;
                 value += base;
             }
-            return kDepth;
+            return 0;
         }
 
         void partial_brot(const T& xmin, const  T& xmax, T&& ymin, T&& ymax, int&& window_x_min, const int& window_x_max, int&& window_y_min, int&& window_y_max, sf::Image& image) {
@@ -38,7 +42,9 @@ class Mandelbrot{
                     SimpleComplex coordinate(xmin + delta_x, k_ymin + delta_y);
                     int deviation = mandelbrot(coordinate);
                     if (deviation < kDepth) {
-                        image.setPixel(x, y, sf::Color((deviation * 7) % 256, (deviation * 41) % 256, (deviation * 127) % 256));
+                        //image.setPixel(x, y, sf::Color((deviation * 7) % 256, (deviation * 41) % 256, (deviation * 127) % 256));
+                        image.setPixel(x, y, sf::Color((deviation + 7) % 256, (deviation + 41) % 256, (deviation +127) % 256));
+                        // image.setPixel(x, y, sf::Color(0, 0, (deviation) % 255));
                     }
                 }
             }
@@ -69,7 +75,24 @@ class Mandelbrot{
 			k_xmax = center_point_x + (2 / zoom_factor);
 			k_ymin = center_point_y - (2 / zoom_factor);
 			k_ymax = center_point_y + (2 / zoom_factor);
-            mandelbrot_set(k_xmin, k_xmax, k_ymin, k_ymax, image);
+
+            if (gpu_activated == true) {
+                unsigned int* pixels = new unsigned int[kWindowsSizeX * kWindowsSizeY];
+                render_gpu(k_xmin, k_xmax, k_ymin, k_ymax, kWindowsSizeX, kWindowsSizeY, pixels, kDepth);
+
+                for (int y = 0; y < kWindowsSizeY; ++y) {
+                    for (int x = 0; x < kWindowsSizeX; ++x) {
+                        int deviation = pixels[(y*kWindowsSizeX) + x];
+                        if (deviation > 0) {
+                            image.setPixel(x, y, sf::Color((deviation + 7) % 255, (deviation + 41) % 255, (deviation +127) % 255));
+                        }
+                    }
+                }
+
+                delete(pixels);
+            } else {
+                mandelbrot_set(k_xmin, k_xmax, k_ymin, k_ymax, image);
+            }
         }
 
         void move(float x_factor, float y_factor) {
@@ -137,5 +160,7 @@ class Mandelbrot{
         int kResolution = 800;
         int kNbThread = 8;
         double zoom_factor = 1;
+
+        bool gpu_activated;
 };
 
