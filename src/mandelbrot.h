@@ -41,9 +41,9 @@ class Mandelbrot{
                     T delta_y = (y * 1.0 / (window_y_max - window_y_min)) * (ymax - ymin);
                     SimpleComplex coordinate(xmin + delta_x, k_ymin + delta_y);
                     int deviation = mandelbrot(coordinate);
-                    if (deviation < kDepth) {
+                    if (deviation != 0) {
                         //image.setPixel(x, y, sf::Color((deviation * 7) % 256, (deviation * 41) % 256, (deviation * 127) % 256));
-                        image.setPixel(x, y, sf::Color((deviation + 7) % 256, (deviation + 41) % 256, (deviation +127) % 256));
+                        image.setPixel(x, y, sf::Color((deviation + 7) % 255, (deviation + 41) % 255, (deviation +127) % 255));
                         // image.setPixel(x, y, sf::Color(0, 0, (deviation) % 255));
                     }
                 }
@@ -82,9 +82,9 @@ class Mandelbrot{
 
                 for (int y = 0; y < kWindowsSizeY; ++y) {
                     for (int x = 0; x < kWindowsSizeX; ++x) {
-                        int deviation = pixels[(y*kWindowsSizeX) + x];
-                        if (deviation > 0) {
-                            image.setPixel(x, y, sf::Color((deviation + 7) % 255, (deviation + 41) % 255, (deviation +127) % 255));
+                        int pixel = pixels[(y*kWindowsSizeX) + x];
+                        if (pixel != 0) {
+                            image.setPixel(x, y, sf::Color(pixel >> 16 & 255, pixel >> 8 & 255, pixel & 255));
                         }
                     }
                 }
@@ -138,6 +138,9 @@ class Mandelbrot{
         void precision_decrease(float factor){
             kDepth /= factor;
         };
+        void toggle_rendering_type() {
+            gpu_activated = !gpu_activated;
+        }
 
         T center_point_x = 0.25467168048098116;
         T center_point_y = 0.00054712897737948770;

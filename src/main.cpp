@@ -93,6 +93,10 @@ int main( int argc, char** argv ) {
 					mandelbrot.precision_decrease(2);
 					display_changed = true;
 				}
+				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Numpad0)) {
+					mandelbrot.toggle_rendering_type();
+					display_changed = true;
+				}
 			}
 			if(event.type == sf::Event::MouseButtonPressed) {
 				if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
@@ -138,7 +142,7 @@ int main( int argc, char** argv ) {
 		window.display();
 		display_changed = false;
 
-		//std::this_thread::sleep_for(std::chrono::milliseconds(20));
+		std::this_thread::sleep_for(std::chrono::milliseconds(20));
 	}
 	return 0;
 }
