@@ -3,6 +3,7 @@ Personal projet to play around with an interactive fractal display. This project
 
 Controls:
 * arrows     -> move around(translation)
+* numpad0    -> Toggle CPU/GPU rendering
 * numpad1    -> Doubles current precision, needed for bigger zooms
 * numpad4    -> Halves current precesion
 * numpad +   -> zoom in
