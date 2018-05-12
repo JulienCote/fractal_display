@@ -36,9 +36,9 @@ void mandelbrot_gpu(const double xmin, const  double xmax, const  double ymin, c
     unsigned int deviation = mandelbrot_gpu_dev(coordinate, depth);
 
     if (deviation > 0) {
-        unsigned int r = ((deviation + 7) % 255) << 16;
-        unsigned int g = ((deviation + 41) % 255) << 8;
-        unsigned int b = (deviation + 127) % 255;
+        unsigned int r = ((deviation + 7) % 256) << 16;
+        unsigned int g = ((deviation + 41) % 256) << 8;
+        unsigned int b = (deviation + 127) % 256;
         image[id] = r | g | b;
     }
 }

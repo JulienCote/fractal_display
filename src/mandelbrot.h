@@ -43,7 +43,7 @@ class Mandelbrot{
                     int deviation = mandelbrot(coordinate);
                     if (deviation != 0) {
                         //image.setPixel(x, y, sf::Color((deviation * 7) % 256, (deviation * 41) % 256, (deviation * 127) % 256));
-                        image.setPixel(x, y, sf::Color((deviation + 7) % 255, (deviation + 41) % 255, (deviation +127) % 255));
+                        image.setPixel(x, y, sf::Color((deviation + 7) % 256, (deviation + 41) % 256, (deviation +127) % 256));
                         // image.setPixel(x, y, sf::Color(0, 0, (deviation) % 255));
                     }
                 }
