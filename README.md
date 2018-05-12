@@ -10,12 +10,9 @@ Controls:
 * numpad -   -> zoom out
 * left click -> recenter to mouse position
 
-Technologies currently used: 
+Technologies used (dependencies): 
 * SFML
 * Boost/Multiprecision
-
-Stuff I'll try to use/achieve:
-* CUDA
-* OpenCL
+* CUDA (I'll try to make this one optional or support OpenCL too)
 
 Currently looks like that: ![alt tag](https://github.com/JulienCote/fractal_display/blob/master/sample%20pictures/fractal5.PNG)
